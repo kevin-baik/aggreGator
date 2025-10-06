@@ -1,22 +1,63 @@
 package main
 
+//import _ "github.com/lib/pq"
 import (
+    "os"
     "log"
+    "database/sql"
+
+    _ "github.com/lib/pq"
     "github.com/kevin-baik/aggreGator/internal/config"
+    "github.com/kevin-baik/aggreGator/internal/database"
 )
+
+type state struct {
+    db	    *database.Queries
+    config  *config.Config
+}
 
 func main() {
     cfg, err := config.Read()
     if err != nil {
 	log.Fatalf("Error reading config file: %v", err)
     }
-   
-    err = config.SetUser(cfg, "kevin")
+    dbURL := cfg.DBUrl
+    db, err := sql.Open("postgres", dbURL) 
     if err != nil {
-	log.Fatalf("Error setting user config file: %v", err)
+	log.Fatalf("Error opening db @ %v", dbURL)
     }
-    cfg, err = config.Read()
-    if err != nil {
-	log.Fatalf("Error reading config file: %v", err)
+    dbQueries := database.New(db)
+
+    programState := &state{
+	db:	dbQueries,
+	config: &cfg,
+    }
+    
+    cmds := commands{
+	registeredCommands: make(map[string]func(*state, command) error),
+    }
+    cmds.register("login", handlerLogin)
+    cmds.register("register", handlerRegister)
+    cmds.register("users", handlerListUsers)
+    cmds.register("reset", handlerResetDatabase)
+    cmds.register("agg", handlerFetchFeed)
+    cmds.register("addfeed", handlerAddFeed)
+    cmds.register("feeds", handlerAllFeeds)
+    cmds.register("follow", handlerFollow)
+    cmds.register("following", handlerFollowing)
+
+    if len(os.Args) < 2 {
+	log.Fatalf("No command provided... Usage: cli <command> [args...]")	
+    }
+
+    cmdName := os.Args[1]
+    cmdArgs := os.Args[2:]
+
+    cmd := command{
+	Name: cmdName,
+	Args: cmdArgs,
+    }
+    if err := cmds.run(programState, cmd); err != nil {
+	log.Fatalf("Command Run Error:", err)
     }
 }

@@ -15,8 +15,8 @@ type Config struct {
     CurrentUserName	string `json:"current_user_name"`
 }
 
-func (c Config) String() string {
-    return fmt.Sprintf("Config {\n\tdbUrl: %v\n\tusername: %v\n", c.DBUrl, c.CurrentUserName)
+func (cfg Config) String() string {
+    return fmt.Sprintf("Config {\n\tdbUrl: %v\n\tusername: %v\n}\n", cfg.DBUrl, cfg.CurrentUserName)
 }
 
 func (cfg *Config) SetUser(username string) error {
@@ -41,7 +41,6 @@ func Read() (Config, error) {
     if err != nil {
 	return Config{}, err
     }
-    fmt.Println(cfg)
     return cfg, nil
 }
 
