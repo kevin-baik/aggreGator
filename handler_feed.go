@@ -24,6 +24,7 @@ func handlerAddFeed(s *state, cmd command, user database.User) error {
 	UpdatedAt:  time.Now(),
 	Name:	    cmd.Args[0],
 	Url:	    cmd.Args[1],
+	UserID:	    user.ID,
     })
         if err != nil {
 	fmt.Println("Error creating feed of: %v", feed.Name)
@@ -55,6 +56,10 @@ func handlerAllFeeds(s *state, cmd command) error {
 	return fmt.Errorf("Error getting all feeds: %w", err)
     }
 
+    if len(feeds) == 0 {
+	fmt.Println("No feeds to display")
+	return nil
+    }
     for i, feed := range feeds {
 	fmt.Printf("---------- FEED #%v ----------\n", i + 1)
 	printFeed(feed)
@@ -69,4 +74,5 @@ func printFeed(feed database.Feed) {
     fmt.Printf(" * UpdatedAt: %v\n", feed.UpdatedAt)
     fmt.Printf(" * Name:      %v\n", feed.Name)
     fmt.Printf(" * URL:       %v\n", feed.Url)
+    fmt.Printf(" * AddedBy:   %v\n", feed.UserID)
 }

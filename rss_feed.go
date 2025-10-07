@@ -7,6 +7,7 @@ import(
     "time"
     "encoding/xml"
     "html"
+    "fmt"
 )
 
 type RSSFeed struct {
@@ -62,4 +63,11 @@ func fetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
     }
 
     return &rssFeed, nil
+}
+
+func printRSSFeed(rssFeed RSSFeed) {
+    fmt.Printf("========== %v ==========\n", rssFeed.Channel.Title)
+    for i, item := range rssFeed.Channel.Item {
+	fmt.Printf("Item #%v: %v\n", i + 1, item.Title)
+    }
 }
