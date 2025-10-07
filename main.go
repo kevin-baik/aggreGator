@@ -6,9 +6,9 @@ import (
     "log"
     "database/sql"
 
-    _ "github.com/lib/pq"
     "github.com/kevin-baik/aggreGator/internal/config"
     "github.com/kevin-baik/aggreGator/internal/database"
+    _ "github.com/lib/pq"
 )
 
 type state struct {
@@ -40,7 +40,7 @@ func main() {
     cmds.register("register", handlerRegister)
     cmds.register("users", handlerListUsers)
     cmds.register("reset", handlerResetDatabase)
-    cmds.register("agg", handlerFetchFeed)
+    cmds.register("agg", handlerAgg)
     cmds.register("addfeed", middlewareLoggedIn(handlerAddFeed))
     cmds.register("feeds", handlerAllFeeds)
     cmds.register("follow", middlewareLoggedIn(handlerFollow))

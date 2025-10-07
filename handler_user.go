@@ -1,32 +1,13 @@
 package main
 
 import (
-    "fmt"
     "context"
+    "fmt"
     "time"
-    
+
     "github.com/kevin-baik/aggreGator/internal/database"
     "github.com/google/uuid"
 )
-
-func handlerLogin(s *state, cmd command) error {
-    if len(cmd.Args) == 0 {
-	return fmt.Errorf("No login user provided")
-    } else if len(cmd.Args) > 1 {
-	return fmt.Errorf("Too many arguments. Usage: login [arg]\n")
-    }
-    name := cmd.Args[0]
-    user, err := s.db.GetUser(context.Background(), name)
-    if err != nil {
-	return fmt.Errorf("Login failed. User not in system")
-    }
-
-    if err := s.config.SetUser(user.Name); err != nil {
-	return err 
-    }
-    fmt.Println(user.Name, "has been set as current user")
-    return nil
-}
 
 func handlerRegister(s *state, cmd command) error {
     if len(cmd.Args) == 0 {
@@ -48,8 +29,28 @@ func handlerRegister(s *state, cmd command) error {
     if err := s.config.SetUser(user.Name); err != nil {
 	return err
     }
-    fmt.Printf("Created User: %v\n", user.Name)
+
+    fmt.Println("User created successfully:")
     printUser(user)
+    return nil
+}
+
+func handlerLogin(s *state, cmd command) error {
+    if len(cmd.Args) == 0 {
+	return fmt.Errorf("No login user provided")
+    } else if len(cmd.Args) > 1 {
+	return fmt.Errorf("Too many arguments. Usage: login [arg]\n")
+    }
+    name := cmd.Args[0]
+    user, err := s.db.GetUser(context.Background(), name)
+    if err != nil {
+	return fmt.Errorf("Login failed. User not in system")
+    }
+
+    if err := s.config.SetUser(user.Name); err != nil {
+	return err 
+    }
+    fmt.Println("Logged in as:", user.Name)
     return nil
 }
 
@@ -66,20 +67,6 @@ func handlerListUsers(s *state, cmd command) error {
 	    fmt.Println("*", user.Name)
 	}
     }
-    return nil
-}
-
-func handlerResetDatabase(s *state, cmd command) error {
-    if err := s.db.DeleteAllUsers(context.Background()); err != nil {
-	return fmt.Errorf("Unable to delete users: %w", err)
-    }
-    if err := s.db.DeleteAllFeeds(context.Background()); err != nil {
-	return fmt.Errorf("Unable to delete users: %w", err)
-    }
-    if err := s.db.DeleteAllFeedFollows(context.Background()); err != nil {
-	return fmt.Errorf("Unable to delete users: %w", err)
-    }
-    fmt.Println("Database reset successful!")
     return nil
 }
 
