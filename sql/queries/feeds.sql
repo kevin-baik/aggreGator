@@ -16,5 +16,5 @@ SELECT * FROM feeds;
 SELECT * FROM feeds
 WHERE url = $1;
 
--- name: DeleteFeeds :exec
+-- name: DeleteAllFeeds :exec
 DELETE FROM feeds;

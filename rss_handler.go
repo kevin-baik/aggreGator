@@ -79,7 +79,7 @@ func handlerFetchFeed(s *state, cmd command) error {
     return nil
 }
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
     if len(cmd.Args) == 0 {
 	return fmt.Errorf("Feed name not provided. Usage: addfeed (feed_name, feed_url)\n")
     } else if len(cmd.Args) == 1 {
@@ -97,11 +97,6 @@ func handlerAddFeed(s *state, cmd command) error {
     })
         if err != nil {
 	fmt.Println("Error creating feed of: %v", feed.Name)
-	return err
-    }
-
-    user, err := s.db.GetUser(context.Background(), s.config.CurrentUserName)
-    if err != nil {
 	return err
     }
 
@@ -138,7 +133,7 @@ func handlerAllFeeds(s *state, cmd command) error {
     return nil
 }
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
     if len(cmd.Args) == 0 {
 	return fmt.Errorf("URL to follow not provided. Usage: follow (feed_url)\n")
     } else if len(cmd.Args) > 1 {
@@ -146,10 +141,6 @@ func handlerFollow(s *state, cmd command) error {
     }
 
     feedUrl := cmd.Args[0]
-    user, err := s.db.GetUser(context.Background(), s.config.CurrentUserName)
-    if err != nil {
-	return err
-    }
     feed, err := s.db.GetFeedWithURL(context.Background(), feedUrl)
     if err != nil {
 	return err
@@ -172,14 +163,32 @@ func handlerFollow(s *state, cmd command) error {
     return nil
 }
 
-func handlerFollowing(s *state, cmd command) error {
-    if len(cmd.Args) > 0 {
-	return fmt.Errorf("No arguments needed. Usage: following\n")
+func handlerUnfollow(s *state, cmd command, user database.User) error {
+    if len(cmd.Args) == 0 {
+	return fmt.Errorf("URL to follow not provided. Usage: follow (feed_url)\n")
+    } else if len(cmd.Args) > 1 {
+	return fmt.Errorf("Too many arguments. Usage: follow (feed_url)\n")
     }
 
-    user, err := s.db.GetUser(context.Background(), s.config.CurrentUserName)
+    feedUrl := cmd.Args[0]
+    feed, err := s.db.GetFeedWithURL(context.Background(), feedUrl)
     if err != nil {
 	return err
+    }
+    
+    err = s.db.UnfollowFeed(context.Background(), database.UnfollowFeedParams{
+	UserID:	    user.ID,
+	FeedID:	    feed.ID,
+    })
+    if err != nil {
+	return err
+    }
+    return nil
+}
+
+func handlerFollowing(s *state, cmd command, user database.User) error {
+    if len(cmd.Args) > 0 {
+	return fmt.Errorf("No arguments needed. Usage: following\n")
     }
     
     feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)

@@ -41,10 +41,11 @@ func main() {
     cmds.register("users", handlerListUsers)
     cmds.register("reset", handlerResetDatabase)
     cmds.register("agg", handlerFetchFeed)
-    cmds.register("addfeed", handlerAddFeed)
+    cmds.register("addfeed", middlewareLoggedIn(handlerAddFeed))
     cmds.register("feeds", handlerAllFeeds)
-    cmds.register("follow", handlerFollow)
-    cmds.register("following", handlerFollowing)
+    cmds.register("follow", middlewareLoggedIn(handlerFollow))
+    cmds.register("following", middlewareLoggedIn(handlerFollowing))
+    cmds.register("unfollow", middlewareLoggedIn(handlerUnfollow))
 
     if len(os.Args) < 2 {
 	log.Fatalf("No command provided... Usage: cli <command> [args...]")	
